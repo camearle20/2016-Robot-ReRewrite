@@ -2,11 +2,11 @@ package org.team401.quetz2016.subsystems
 
 import edu.wpi.first.wpilibj.Solenoid
 import edu.wpi.first.wpilibj.Talon
-import org.team401.quetz2016.DriveStick
-import org.team401.quetz2016.DriveWheel
+import org.team401.quetz2016.Gamepad
 import org.team401.snakeskin.component.MotorGroup
 import org.team401.snakeskin.dsl.buildSubsystem
 import org.team401.snakeskin.event.Events
+import org.team401.snakeskin.subsystem.States
 import org.team401.snakeskin.subsystem.Subsystem
 
 /**
@@ -31,37 +31,56 @@ val Drivetrain: Subsystem = buildSubsystem {
         left3.inverted = true
     }
 
-    on (Events.ENABLED) {
-        MODE = "drive"
-        STATE = "low"
-    }
+    val driveMachine = stateMachine("drive") {
+        var translation = 0.0
+        var rotation = 0.0
 
-    state("low") {
-        shifter.set(true)
-    }
-
-    state("high") {
-        shifter.set(false)
-    }
-
-    loop {
-        when (MODE) {
-            "drive" -> {
-                val translation = DriveStick.readAxis { PITCH }
-                val rotation = DriveWheel.readAxis { WHEEL }
-
-                left.set(translation + rotation)
-                right.set(translation - rotation)
-            }
-
-            "drive_reduced" -> {
-                val translation = DriveStick.readAxis { PITCH } / 3
-                val rotation = DriveWheel.readAxis { WHEEL } / 1.5
-
-                left.set(translation + rotation)
-                right.set(translation - rotation)
-            }
-
+        fun drive() {
+            left.set(translation + rotation)
+            right.set(translation - rotation)
         }
+
+        state("drive") {
+            action {
+                translation = Gamepad.readAxis { LEFT_Y }
+                rotation = Gamepad.readAxis { RIGHT_X }
+                drive()
+            }
+        }
+
+        state("drive_reduced") {
+            action {
+                translation = Gamepad.readAxis { LEFT_Y } / 3
+                rotation = Gamepad.readAxis { RIGHT_X } / 2
+                drive()
+            }
+        }
+
+        default {
+            action {
+                translation = 0.0
+                rotation = 0.0
+                drive()
+            }
+        }
+    }
+
+    val shiftMachine = stateMachine("shifting") {
+        state("low") {
+            entry {
+                shifter.set(true)
+            }
+        }
+
+        state("high") {
+            entry {
+                shifter.set(false)
+            }
+        }
+    }
+
+    on (Events.ENABLED) {
+        driveMachine.setState("drive")
+        shiftMachine.setState("low")
     }
 }

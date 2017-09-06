@@ -2,9 +2,10 @@ package org.team401.quetz2016.subsystems
 
 import com.ctre.CANTalon
 import edu.wpi.first.wpilibj.Spark
-import org.team401.quetz2016.MashStick
+import org.team401.quetz2016.Gamepad
 import org.team401.snakeskin.dsl.buildSubsystem
 import org.team401.snakeskin.event.Events
+import org.team401.snakeskin.subsystem.States
 import org.team401.snakeskin.subsystem.Subsystem
 
 /**
@@ -20,12 +21,17 @@ val Arm: Subsystem = buildSubsystem {
         motor.enableLimitSwitch(true, true)
     }
 
-    loop {
-        when (MODE) {
-            "move" ->
-                motor.set(MashStick.readAxis { PITCH }/2)
-            else ->
+    stateMachine("arm") {
+        state("move") {
+            action {
+                motor.set(Gamepad.readAxis(5) / 2)
+            }
+        }
+
+        default {
+            action {
                 motor.set(0.0)
+            }
         }
     }
 }
