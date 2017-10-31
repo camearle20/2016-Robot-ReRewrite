@@ -2,7 +2,8 @@ package org.team401.quetz2016.subsystems
 
 import edu.wpi.first.wpilibj.Solenoid
 import edu.wpi.first.wpilibj.Talon
-import org.team401.quetz2016.Gamepad
+import org.team401.quetz2016.DriveStick
+import org.team401.quetz2016.Wheel
 import org.team401.snakeskin.component.MotorGroup
 import org.team401.snakeskin.dsl.buildSubsystem
 import org.team401.snakeskin.event.Events
@@ -42,16 +43,8 @@ val Drivetrain: Subsystem = buildSubsystem {
 
         state("drive") {
             action {
-                translation = Gamepad.readAxis { LEFT_Y }
-                rotation = Gamepad.readAxis { RIGHT_X }
-                drive()
-            }
-        }
-
-        state("drive_reduced") {
-            action {
-                translation = Gamepad.readAxis { LEFT_Y } / 3
-                rotation = Gamepad.readAxis { RIGHT_X } / 2
+                translation = DriveStick.readAxis { PITCH }
+                rotation = Wheel.readAxis { WHEEL }
                 drive()
             }
         }

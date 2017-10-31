@@ -1,8 +1,9 @@
 package org.team401.quetz2016.subsystems
 
-import com.ctre.CANTalon
+import com.ctre.MotorControl.CANTalon
+import com.ctre.MotorControl.SmartMotorController
 import edu.wpi.first.wpilibj.Solenoid
-import org.team401.quetz2016.Gamepad
+import org.team401.quetz2016.MashStick
 import org.team401.snakeskin.component.MotorGroup
 import org.team401.snakeskin.dsl.buildSubsystem
 import org.team401.snakeskin.event.Events
@@ -20,8 +21,6 @@ val Shooter: Subsystem = buildSubsystem {
 
     setup {
         left.inverted = true
-        left.changeControlMode(CANTalon.TalonControlMode.PercentVbus)
-        right.changeControlMode(CANTalon.TalonControlMode.PercentVbus)
     }
 
     val shooterMachine = stateMachine("wheels") {
@@ -29,26 +28,27 @@ val Shooter: Subsystem = buildSubsystem {
             action {
                 motors.set(-.5)
             }
-            exit {
-                motors.set(0.0)
-            }
         }
 
-        state("shoot_reduced") {
+        state("shoot") {
             action {
-                motors.set(Gamepad.readAxis { RIGHT_TRIGGER } / 2)
+                motors.set((MashStick.readAxis {THROTTLE} + 1) / 2)
             }
         }
 
         default {
             action {
-                motors.set(Gamepad.readAxis { RIGHT_TRIGGER })
+                motors.set(0.0)
             }
         }
     }
 
     val kickerMachine = stateMachine("kicker") {
         state("shoot") {
+            rejectIf {
+                shooterMachine.getState() != "shoot"
+            }
+
             entry {
                 kicker.set(true)
             }
@@ -59,9 +59,5 @@ val Shooter: Subsystem = buildSubsystem {
                 kicker.set(false)
             }
         }
-    }
-
-    on(Events.ENABLED) {
-        shooterMachine.setState("shoot")
     }
 }

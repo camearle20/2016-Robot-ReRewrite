@@ -1,5 +1,7 @@
 
-import org.team401.quetz2016.Gamepad
+import org.team401.quetz2016.DriveStick
+import org.team401.quetz2016.MashStick
+import org.team401.quetz2016.Wheel
 import org.team401.quetz2016.subsystems.Arm
 import org.team401.quetz2016.subsystems.Drivetrain
 import org.team401.quetz2016.subsystems.Shooter
@@ -20,7 +22,7 @@ import org.team401.snakeskin.registry.Subsystems
  */
 
 fun setup() {
-    Controllers.add(Gamepad)
+    Controllers.add(Wheel, DriveStick, MashStick)
     Subsystems.add(Drivetrain, Arm, Shooter)
 }
 
